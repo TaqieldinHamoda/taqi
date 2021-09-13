@@ -2,6 +2,7 @@ import datetime
 import os
 from flask import Flask, session, redirect, url_for, escape, request
 from dotenv import load_dotenv
+from models.database import Database
 
 # Read .env
 load_dotenv()
@@ -27,7 +28,16 @@ app.secret_key = Configuration.COOKIE_SECRET
 app.permanent_session_lifetime = datetime.timedelta(seconds=Configuration.COOKIE_AGE)
 SESSION_COOKIE_SECURE = True
 
+
 # Setup Debugging and Testing Routes
 @app.before_request
 def make_session_permanent():
     session.permanent = True
+
+# Set up database connection
+DATABASE = Database(Configuration.DB_USER, Configuration.DB_PASS, Configuration.DB_CLUSTER)
+
+if not Configuration.TESTING:
+    DATABASE = DATABASE.getDatabase("production")
+else:
+    DATABASE = DATABASE.getDatabase("test")
